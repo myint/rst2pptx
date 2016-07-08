@@ -45,6 +45,7 @@ class PowerPointTranslator(docutils.nodes.NodeVisitor):
         self.bullet_level = 0
         self.presentation = pptx.Presentation()
         self.slides = self.presentation.slides
+        self.table_rows = None
 
     def visit_document(self, node):
         pass
@@ -71,10 +72,14 @@ class PowerPointTranslator(docutils.nodes.NodeVisitor):
         print('depart_list_item({})'.format(node))
 
     def visit_paragraph(self, node):
-        text_frame = self.slides[-1].shapes.placeholders[1].text_frame
-        paragraph = text_frame.add_paragraph()
-        paragraph.text = node.astext()
-        paragraph.level = self.bullet_level
+        if self.table_rows is None:
+            text_frame = self.slides[-1].shapes.placeholders[1].text_frame
+            paragraph = text_frame.add_paragraph()
+            paragraph.text = node.astext()
+            paragraph.level = self.bullet_level
+        else:
+            print('self.table_rows:', self.table_rows)
+            self.table_rows[-1].append(node.astext())
 
     def depart_paragraph(self, node):
         print('depart_paragraph({})'.format(node))
@@ -89,8 +94,13 @@ class PowerPointTranslator(docutils.nodes.NodeVisitor):
 
     def visit_title(self, node):
         print('visit_title({})'.format(node))
-        self.slides[-1].shapes.title.text = node.astext()
-        # TODO: Author.
+        if len(self.slides):
+            self.slides[-1].shapes.title.text = node.astext()
+        else:
+            # Title slide.
+            slide = self.slides.add_slide(self.presentation.slide_layouts[0])
+            slide.shapes.title.text = node.astext()
+            # TODO: Author.
 
     def depart_title(self, node):
         pass
@@ -113,6 +123,29 @@ class PowerPointTranslator(docutils.nodes.NodeVisitor):
 
     def depart_enumerated_list(self, node):
         pass
+
+    def visit_tgroup(self, node):
+        self.table_rows = []
+
+    def depart_tgroup(self, node):
+        if self.table_rows and self.table_rows[0]:
+            table = self.slides[-1].shapes.add_table(
+                rows=len(self.table_rows),
+                cols=len(self.table_rows[0]),
+                left=pptx.util.Inches(1.),
+                top=pptx.util.Inches(2.),
+                width=pptx.util.Inches(8.),
+                height=pptx.util.Inches(4.)).table
+
+            for (row_index, row) in enumerate(self.table_rows):
+                for (col_index, col) in enumerate(row):
+                    table.cell(row_idx=row_index, col_idx=col_index).text = col
+
+            self.table_rows = None
+
+    def visit_row(self, node):
+        assert self.table_rows is not None
+        self.table_rows.append([])
 
     def unknown_visit(self, node):
         print('unknown_visit({})'.format(node))
