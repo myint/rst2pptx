@@ -29,17 +29,24 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from docutils import core
-from docutils import nodes
-from docutils import utils
+import docutils.core
+import docutils.nodes
+import docutils.utils
+import pptx
 
 
-class PowerPointTranslator(nodes.NodeVisitor):
+class PowerPointTranslator(docutils.nodes.NodeVisitor):
 
     """A translator for converting docutils elements to PowerPoint."""
 
     def __init__(self, document):
-        nodes.NodeVisitor.__init__(self, document)
+        docutils.nodes.NodeVisitor.__init__(self, document)
+
+        self.presentation = pptx.Presentation()
+        self.slides = self.presentation.slides
+
+    def visit_document(self, node):
+        pass
 
     def depart_document(self, node):
         pass
@@ -50,17 +57,38 @@ class PowerPointTranslator(nodes.NodeVisitor):
     def visit_image(self, node):
         pass
 
+    def visit_Text(self, node):
+        pass
+
     def depart_Text(self, node):
         pass
 
+    def visit_list_item(self, node):
+        print('visit_list_item({})'.format(node))
+
+    def depart_list_item(self, node):
+        print('depart_list_item({})'.format(node))
+
+    def visit_paragraph(self, node):
+        text_frame = self.slides[-1].shapes.placeholders[1].text_frame
+        paragraph = text_frame.add_paragraph()
+        paragraph.text = node.astext()
+
+    def depart_paragraph(self, node):
+        print('depart_paragraph({})'.format(node))
+
     def visit_section(self, node):
-        pass
+        print('visit_section({})'.format(node))
+        # TODO: Handle title page.
+        self.slides.add_slide(self.presentation.slide_layouts[1])
 
     def depart_section(self, node):
         pass
 
     def visit_title(self, node):
-        pass
+        print('visit_title({})'.format(node))
+        self.slides[-1].shapes.title.text = node.astext()
+        # TODO: Author.
 
     def depart_title(self, node):
         pass
@@ -83,28 +111,43 @@ class PowerPointTranslator(nodes.NodeVisitor):
     def depart_enumerated_list(self, node):
         pass
 
-    def unimplemented_visit(self, node):
-        assert False
+    def unknown_visit(self, node):
+        print('unknown_visit({})'.format(node))
+
+    def unknown_departure(self, node):
+        print('unknown_visit({})'.format(node))
+
+    def astext(self):
+        # TODO
+        pass
 
 
-class PowerPointWriter(core.writers.Writer):
+class PowerPointWriter(docutils.core.writers.Writer):
 
     """A docutils writer that produces PowerPoint."""
 
     def __init__(self):
-        core.writers.Writer.__init__(self)
+        docutils.core.writers.Writer.__init__(self)
         self.translator_class = PowerPointTranslator
+
+    def translate(self):
+        visitor = self.translator_class(self.document)
+        self.document.walkabout(visitor)
+        self.output = visitor.astext()
+
+        # TODO: Take name from command line.
+        visitor.presentation.save('test.pptx')
 
 
 def main():
     description = (
         'Generates PowerPoint presentations. ' +
-        core.default_description)
+        docutils.core.default_description)
 
-    core.publish_cmdline(
+    docutils.core.publish_cmdline(
         writer=PowerPointWriter(),
         description=description,
-        settings_overrides={'halt_level': utils.Reporter.ERROR_LEVEL})
+        settings_overrides={'halt_level': docutils.utils.Reporter.ERROR_LEVEL})
 
 
 if __name__ == '__main__':
