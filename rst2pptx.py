@@ -42,6 +42,7 @@ class PowerPointTranslator(docutils.nodes.NodeVisitor):
     def __init__(self, document):
         docutils.nodes.NodeVisitor.__init__(self, document)
 
+        self.bullet_level = 0
         self.presentation = pptx.Presentation()
         self.slides = self.presentation.slides
 
@@ -73,6 +74,7 @@ class PowerPointTranslator(docutils.nodes.NodeVisitor):
         text_frame = self.slides[-1].shapes.placeholders[1].text_frame
         paragraph = text_frame.add_paragraph()
         paragraph.text = node.astext()
+        paragraph.level = self.bullet_level
 
     def depart_paragraph(self, node):
         print('depart_paragraph({})'.format(node))
@@ -100,10 +102,11 @@ class PowerPointTranslator(docutils.nodes.NodeVisitor):
         pass
 
     def visit_bullet_list(self, node):
-        pass
+        self.bullet_level += 1
 
     def depart_bullet_list(self, node):
-        pass
+        self.bullet_level -= 1
+        assert self.bullet_level >= 0
 
     def visit_enumerated_list(self, node):
         pass
