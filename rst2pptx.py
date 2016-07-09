@@ -29,6 +29,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import os
+
 import docutils.core
 import docutils.nodes
 import docutils.utils
@@ -44,11 +46,12 @@ class PowerPointTranslator(docutils.nodes.NodeVisitor):
 
         self.bullet_level = 0
         self.presentation = pptx.Presentation()
+        self.root_path = None
         self.slides = self.presentation.slides
         self.table_rows = None
 
     def visit_document(self, node):
-        pass
+        self.root_path = os.path.dirname(node['source'])
 
     def depart_document(self, node):
         pass
@@ -57,7 +60,11 @@ class PowerPointTranslator(docutils.nodes.NodeVisitor):
         pass
 
     def visit_image(self, node):
-        pass
+        print(type(node))
+        self.slides[-1].shapes.add_picture(
+            os.path.join(self.root_path, node.attributes['uri']),
+            left=pptx.util.Inches(1.),
+            top=pptx.util.Inches(2.))
 
     def visit_Text(self, node):
         pass
@@ -66,10 +73,10 @@ class PowerPointTranslator(docutils.nodes.NodeVisitor):
         pass
 
     def visit_list_item(self, node):
-        print('visit_list_item({})'.format(node))
+        pass
 
     def depart_list_item(self, node):
-        print('depart_list_item({})'.format(node))
+        pass
 
     def visit_paragraph(self, node):
         if self.table_rows is None:
