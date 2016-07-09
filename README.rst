@@ -4,8 +4,6 @@ rst2pptx
 
 Converts reStructuredText to PowerPoint.
 
-.. warning:: This tool is in very early experimental phase.
-
 
 Installation
 ============
@@ -37,3 +35,12 @@ Output:
 +----------------------------------------------------------------------------------------+
 | .. image:: https://raw.githubusercontent.com/myint/rst2pptx/master/examples/output.png |
 +----------------------------------------------------------------------------------------+
+
+Warning
+=======
+
+This tool is in a very early experimental phase. Also, if you don't
+specifically need to output PowerPoint, rst2beamer_, which generates PDFs is a
+better choice.
+
+.. _rst2beamer: https://github.com/myint/rst2beamer
