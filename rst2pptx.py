@@ -25,11 +25,9 @@
 
 """Converts reStructuredText to PowerPoint."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-
 import os
+import tempfile
+import urllib
 
 import docutils.core
 import docutils.nodes
@@ -53,12 +51,11 @@ class PowerPointTranslator(docutils.nodes.NodeVisitor):
 
         self.bullet_level = 0
         self.presentation = presentation
-        self.root_path = None
         self.slides = self.presentation.slides
         self.table_rows = None
 
     def visit_document(self, node):
-        self.root_path = os.path.dirname(node['source'])
+        pass
 
     def depart_document(self, node):
         pass
@@ -67,10 +64,43 @@ class PowerPointTranslator(docutils.nodes.NodeVisitor):
         pass
 
     def visit_image(self, node):
-        picture = self.slides[-1].shapes.add_picture(
-            os.path.join(self.root_path, node.attributes['uri']),
-            left=0,
-            top=0)
+        temporary_file = None
+
+        try:
+            uri = node.attributes['uri']
+            if '://' in uri:
+                try:
+                    with urllib.request.urlopen(uri) as input_file:
+                        image_content = input_file.read()
+
+                    with tempfile.NamedTemporaryFile(
+                            'wb', delete=False) as temporary_file:
+                        temporary_file.write(image_content)
+
+                    image_filename = temporary_file.name
+                except urllib.error.HTTPError as e:
+                    self.document.reporter.warning(
+                        'Could not open {}'.format(uri))
+            else:
+                document_filename = docutils.utils.get_source_line(node)[0]
+                if document_filename and document_filename != '<stdin>':
+                    root_path = os.path.dirname(document_filename)
+                else:
+                    root_path = os.getcwd()
+                image_filename = os.path.join(root_path, uri)
+
+            try:
+                picture = self.slides[-1].shapes.add_picture(
+                    image_filename,
+                    left=0,
+                    top=0)
+            except IOError:
+                self.document.reporter.warning(
+                    'Could not open {}'.format(image_filename))
+                return
+        finally:
+            if temporary_file:
+                os.remove(temporary_file.name)
 
         center_picture(picture, self.presentation)
 
