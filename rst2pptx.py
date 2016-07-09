@@ -45,11 +45,11 @@ class PowerPointTranslator(docutils.nodes.NodeVisitor):
 
     """A translator for converting docutils elements to PowerPoint."""
 
-    def __init__(self, document):
+    def __init__(self, document, presentation):
         docutils.nodes.NodeVisitor.__init__(self, document)
 
         self.bullet_level = 0
-        self.presentation = pptx.Presentation()
+        self.presentation = presentation
         self.root_path = None
         self.slides = self.presentation.slides
         self.table_rows = None
@@ -181,7 +181,6 @@ class PowerPointTranslator(docutils.nodes.NodeVisitor):
         print('unknown_departure({})'.format(node))
 
     def astext(self):
-        # TODO
         pass
 
 
@@ -198,15 +197,26 @@ class PowerPointWriter(docutils.core.writers.Writer):
 
     def __init__(self):
         docutils.core.writers.Writer.__init__(self)
+
+        self.presentation = pptx.Presentation()
         self.translator_class = PowerPointTranslator
 
     def translate(self):
-        visitor = self.translator_class(self.document)
+        visitor = self.translator_class(document=self.document,
+                                        presentation=self.presentation)
         self.document.walkabout(visitor)
-        self.output = visitor.astext()
 
-        # TODO: Take name from command line.
-        visitor.presentation.save('test.pptx')
+    def write(self, document, destination):
+        self.document = document
+
+        self.language = docutils.languages.get_language(
+            document.settings.language_code,
+            document.reporter)
+
+        self.translate()
+
+        if destination.destination is None:
+            self.presentation.save(destination.destination_path)
 
 
 def main():
