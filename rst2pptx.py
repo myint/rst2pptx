@@ -81,26 +81,25 @@ class PowerPointTranslator(docutils.nodes.NodeVisitor):
         pass
 
     def visit_list_item(self, node):
-        pass
+        text_frame = self.slides[-1].shapes.placeholders[1].text_frame
+        paragraph = text_frame.add_paragraph()
+        paragraph.text = node.astext()
+
+        assert self.bullet_level
+        paragraph.level = self.bullet_level
+
+        raise docutils.nodes.SkipNode
 
     def depart_list_item(self, node):
         pass
 
     def visit_paragraph(self, node):
-        if self.bullet_level:
-            text_frame = self.slides[-1].shapes.placeholders[1].text_frame
-            paragraph = text_frame.add_paragraph()
-            paragraph.text = node.astext()
-            paragraph.level = self.bullet_level
-        elif self.table_rows is not None:
-            self.table_rows[-1].append(node.astext())
-        else:
-            text_box = self.slides[-1].shapes.add_textbox(
-                left=MARGIN,
-                top=TITLE_BUFFER,
-                width=self.presentation.slide_width - MARGIN,
-                height=self.presentation.slide_height - TITLE_BUFFER)
-            text_box.text = node.astext()
+        text_box = self.slides[-1].shapes.add_textbox(
+            left=MARGIN,
+            top=TITLE_BUFFER,
+            width=self.presentation.slide_width - 2 * MARGIN,
+            height=self.presentation.slide_height - 2 * TITLE_BUFFER)
+        text_box.text = node.astext()
 
     def depart_paragraph(self, node):
         pass
@@ -150,10 +149,10 @@ class PowerPointTranslator(docutils.nodes.NodeVisitor):
             table = self.slides[-1].shapes.add_table(
                 rows=len(self.table_rows),
                 cols=len(self.table_rows[0]),
-                left=pptx.util.Inches(1.),
-                top=pptx.util.Inches(2.),
-                width=pptx.util.Inches(8.),
-                height=pptx.util.Inches(4.)).table
+                left=MARGIN,
+                top=TITLE_BUFFER,
+                width=self.presentation.slide_width - 2 * MARGIN,
+                height=self.presentation.slide_height - 2 * TITLE_BUFFER).table
 
             for (row_index, row) in enumerate(self.table_rows):
                 for (col_index, col) in enumerate(row):
@@ -164,6 +163,16 @@ class PowerPointTranslator(docutils.nodes.NodeVisitor):
     def visit_row(self, node):
         assert self.table_rows is not None
         self.table_rows.append([])
+
+    def depart_row(self, node):
+        pass
+
+    def visit_entry(self, node):
+        self.table_rows[-1].append(node.astext())
+        raise docutils.nodes.SkipNode
+
+    def depart_entry(self, node):
+        pass
 
     def unknown_visit(self, node):
         print('unknown_visit({})'.format(node))
@@ -179,7 +188,6 @@ class PowerPointTranslator(docutils.nodes.NodeVisitor):
 def center_picture(presentation, picture):
     picture.left = (presentation.slide_width - picture.width) // 2
 
-    TITLE_BUFFER = pptx.util.Inches(1.)
     slide_height = presentation.slide_height - TITLE_BUFFER
     picture.top = (slide_height - picture.height) // 2 + TITLE_BUFFER
 
