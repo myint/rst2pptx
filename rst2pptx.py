@@ -85,12 +85,7 @@ class PowerPointTranslator(docutils.nodes.NodeVisitor):
         print('depart_paragraph({})'.format(node))
 
     def visit_section(self, node):
-        print('visit_section({})'.format(node))
-        # TODO: Handle title page.
         self.slides.add_slide(self.presentation.slide_layouts[1])
-
-    def depart_section(self, node):
-        pass
 
     def visit_title(self, node):
         print('visit_title({})'.format(node))
