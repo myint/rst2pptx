@@ -1,1 +1,6 @@
-.*.sw?
+.*.swp
+dist
+build
+*.pyc
+*~
+*.egg-info
