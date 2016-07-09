@@ -40,7 +40,7 @@ Warning
 =======
 
 This tool is in a very early experimental phase. Also, if you don't
-specifically need to output PowerPoint, rst2beamer_, which generates PDFs is a
-better choice.
+specifically need to output PowerPoint, rst2beamer_, which generates PDF
+presentations, is a better choice.
 
 .. _rst2beamer: https://github.com/myint/rst2beamer
