@@ -14,9 +14,23 @@ From pip::
 
     $ pip install --upgrade rst2pptx
 
-Usage
-=====
+Example
+=======
 
 ::
 
     $ rst2pptx input.rst output.pptx
+
+Input:
+
+.. code-block:: rst
+
+    Slide 1
+    =======
+
+    - it has some bullets
+    - bullet 2
+
+Output:
+
+.. image:: examples/output.png
