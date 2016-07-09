@@ -37,6 +37,9 @@ import docutils.utils
 import pptx
 
 
+__version__ = '0.1'
+
+
 TITLE_BUFFER = pptx.util.Inches(2.)
 MARGIN = pptx.util.Inches(1.)
 
