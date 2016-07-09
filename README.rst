@@ -33,4 +33,7 @@ Input:
 
 Output:
 
-.. image:: https://raw.githubusercontent.com/myint/rst2pptx/master/examples/output.png
+
++----------------------------------------------------------------------------------------+
+| .. image:: https://raw.githubusercontent.com/myint/rst2pptx/master/examples/output.png |
++----------------------------------------------------------------------------------------+
