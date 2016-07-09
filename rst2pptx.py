@@ -72,7 +72,7 @@ class PowerPointTranslator(docutils.nodes.NodeVisitor):
             left=0,
             top=0)
 
-        center_picture(self.presentation, picture)
+        center_picture(picture, self.presentation)
 
     def depart_image(self, node):
         pass
@@ -187,7 +187,7 @@ class PowerPointTranslator(docutils.nodes.NodeVisitor):
         pass
 
 
-def center_picture(presentation, picture):
+def center_picture(picture, presentation):
     picture.left = (presentation.slide_width - picture.width) // 2
 
     slide_height = presentation.slide_height - TITLE_BUFFER
