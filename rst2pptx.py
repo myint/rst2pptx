@@ -37,6 +37,10 @@ import docutils.utils
 import pptx
 
 
+TITLE_BUFFER = pptx.util.Inches(2.)
+MARGIN = pptx.util.Inches(1.)
+
+
 class PowerPointTranslator(docutils.nodes.NodeVisitor):
 
     """A translator for converting docutils elements to PowerPoint."""
@@ -60,11 +64,15 @@ class PowerPointTranslator(docutils.nodes.NodeVisitor):
         pass
 
     def visit_image(self, node):
-        print(type(node))
-        self.slides[-1].shapes.add_picture(
+        picture = self.slides[-1].shapes.add_picture(
             os.path.join(self.root_path, node.attributes['uri']),
-            left=pptx.util.Inches(1.),
-            top=pptx.util.Inches(2.))
+            left=0,
+            top=0)
+
+        center_picture(self.presentation, picture)
+
+    def depart_image(self, node):
+        pass
 
     def visit_Text(self, node):
         pass
@@ -79,23 +87,31 @@ class PowerPointTranslator(docutils.nodes.NodeVisitor):
         pass
 
     def visit_paragraph(self, node):
-        if self.table_rows is None:
+        if self.bullet_level:
             text_frame = self.slides[-1].shapes.placeholders[1].text_frame
             paragraph = text_frame.add_paragraph()
             paragraph.text = node.astext()
             paragraph.level = self.bullet_level
-        else:
-            print('self.table_rows:', self.table_rows)
+        elif self.table_rows is not None:
             self.table_rows[-1].append(node.astext())
+        else:
+            text_box = self.slides[-1].shapes.add_textbox(
+                left=MARGIN,
+                top=TITLE_BUFFER,
+                width=self.presentation.slide_width - MARGIN,
+                height=self.presentation.slide_height - TITLE_BUFFER)
+            text_box.text = node.astext()
 
     def depart_paragraph(self, node):
-        print('depart_paragraph({})'.format(node))
+        pass
 
     def visit_section(self, node):
         self.slides.add_slide(self.presentation.slide_layouts[1])
 
+    def depart_section(self, node):
+        pass
+
     def visit_title(self, node):
-        print('visit_title({})'.format(node))
         if len(self.slides):
             self.slides[-1].shapes.title.text = node.astext()
         else:
@@ -153,11 +169,19 @@ class PowerPointTranslator(docutils.nodes.NodeVisitor):
         print('unknown_visit({})'.format(node))
 
     def unknown_departure(self, node):
-        print('unknown_visit({})'.format(node))
+        print('unknown_departure({})'.format(node))
 
     def astext(self):
         # TODO
         pass
+
+
+def center_picture(presentation, picture):
+    picture.left = (presentation.slide_width - picture.width) // 2
+
+    TITLE_BUFFER = pptx.util.Inches(1.)
+    slide_height = presentation.slide_height - TITLE_BUFFER
+    picture.top = (slide_height - picture.height) // 2 + TITLE_BUFFER
 
 
 class PowerPointWriter(docutils.core.writers.Writer):
