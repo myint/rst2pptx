@@ -218,19 +218,33 @@ class PowerPointWriter(docutils.core.writers.Writer):
 
     """A docutils writer that produces PowerPoint."""
 
+    settings_spec = (
+        'PowerPoint options',
+        None,
+        (
+            (
+                'PowerPoint template.',
+                ['--pptx-template'],
+                {'default': None}
+            ),
+        )
+    )
+
     def __init__(self):
         docutils.core.writers.Writer.__init__(self)
 
-        self.presentation = pptx.Presentation()
+        self.presentation = None
         self.translator_class = PowerPointTranslator
 
     def translate(self):
+        assert self.presentation
         visitor = self.translator_class(document=self.document,
                                         presentation=self.presentation)
         self.document.walkabout(visitor)
 
     def write(self, document, destination):
         self.document = document
+        self.presentation = pptx.Presentation(document.settings.pptx_template)
 
         self.language = docutils.languages.get_language(
             document.settings.language_code,
