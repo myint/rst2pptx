@@ -27,7 +27,6 @@
 
 import io
 import os
-import tempfile
 import urllib
 
 import docutils.core
@@ -65,43 +64,32 @@ class PowerPointTranslator(docutils.nodes.NodeVisitor):
         pass
 
     def visit_image(self, node):
-        temporary_file = None
+        uri = node.attributes['uri']
+        if '://' in uri:
+            try:
+                with urllib.request.urlopen(uri) as input_file:
+                    image_file = io.BytesIO(input_file.read())
+            except urllib.error.HTTPError as e:
+                self.document.reporter.warning(
+                    'Could not open {}'.format(uri))
+                return
+        else:
+            document_filename = docutils.utils.get_source_line(node)[0]
+            if document_filename and document_filename != '<stdin>':
+                root_path = os.path.dirname(document_filename)
+            else:
+                root_path = os.getcwd()
+            image_file = os.path.join(root_path, uri)
 
         try:
-            uri = node.attributes['uri']
-            if '://' in uri:
-                try:
-                    with urllib.request.urlopen(uri) as input_file:
-                        image_content = input_file.read()
-
-                    with tempfile.NamedTemporaryFile(
-                            'wb', delete=False) as temporary_file:
-                        temporary_file.write(image_content)
-
-                    image_filename = temporary_file.name
-                except urllib.error.HTTPError as e:
-                    self.document.reporter.warning(
-                        'Could not open {}'.format(uri))
-            else:
-                document_filename = docutils.utils.get_source_line(node)[0]
-                if document_filename and document_filename != '<stdin>':
-                    root_path = os.path.dirname(document_filename)
-                else:
-                    root_path = os.getcwd()
-                image_filename = os.path.join(root_path, uri)
-
-            try:
-                picture = self.slides[-1].shapes.add_picture(
-                    image_filename,
-                    left=0,
-                    top=0)
-            except IOError:
-                self.document.reporter.warning(
-                    'Could not open {}'.format(image_filename))
-                return
-        finally:
-            if temporary_file:
-                os.remove(temporary_file.name)
+            picture = self.slides[-1].shapes.add_picture(
+                image_file,
+                left=0,
+                top=0)
+        except IOError:
+            self.document.reporter.warning(
+                'Could not open {}'.format(image_file))
+            return
 
         center_picture(picture, self.presentation)
 
