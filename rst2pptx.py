@@ -250,17 +250,16 @@ class PowerPointWriter(docutils.core.writers.Writer):
 
         if destination.destination is None:
             self.presentation.save(destination.destination_path)
+        else:
+            self.document.reporter.error('Destination filename required')
 
 
 def main():
-    description = (
-        'Generates PowerPoint presentations. ' +
-        docutils.core.default_description)
-
     docutils.core.publish_cmdline(
         writer=PowerPointWriter(),
-        description=description,
-        settings_overrides={'halt_level': docutils.utils.Reporter.ERROR_LEVEL})
+        description='Generates PowerPoint presentations.',
+        settings_overrides={'halt_level': docutils.utils.Reporter.ERROR_LEVEL},
+        usage='%prog [options] <source> <destination>')
 
 
 if __name__ == '__main__':
