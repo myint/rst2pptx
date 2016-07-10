@@ -25,6 +25,7 @@
 
 """Converts reStructuredText to PowerPoint."""
 
+import io
 import os
 import tempfile
 import urllib
@@ -251,15 +252,17 @@ class PowerPointWriter(docutils.core.writers.Writer):
         if destination.destination is None:
             self.presentation.save(destination.destination_path)
         else:
-            self.document.reporter.error('Destination filename required')
+            stream = io.BytesIO()
+            self.presentation.save(stream)
+            destination.write(stream.getvalue())
 
 
 def main():
     docutils.core.publish_cmdline(
         writer=PowerPointWriter(),
-        description='Generates PowerPoint presentations.',
-        settings_overrides={'halt_level': docutils.utils.Reporter.ERROR_LEVEL},
-        usage='%prog [options] <source> <destination>')
+        description='Generates PowerPoint presentations.  ' +
+                    docutils.core.default_description,
+        settings_overrides={'halt_level': docutils.utils.Reporter.ERROR_LEVEL})
 
 
 if __name__ == '__main__':
