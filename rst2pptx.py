@@ -209,10 +209,10 @@ class PowerPointTranslator(docutils.nodes.NodeVisitor):
         pass
 
     def unknown_visit(self, node):
-        print('unknown_visit({})'.format(node))
+        self.document.reporter.warning('unknown_visit({})'.format(node))
 
     def unknown_departure(self, node):
-        print('unknown_departure({})'.format(node))
+        self.document.reporter.warning('unknown_departure({})'.format(node))
 
     def astext(self):
         pass
