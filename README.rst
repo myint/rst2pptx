@@ -2,6 +2,10 @@
 rst2pptx
 ========
 
+.. image:: https://travis-ci.org/myint/rst2pptx.svg?branch=master
+    :target: https://travis-ci.org/myint/rst2pptx
+    :alt: Build status
+
 Converts reStructuredText to PowerPoint.
 
 
