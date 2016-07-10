@@ -23,14 +23,13 @@ Input:
 
 .. code-block:: rst
 
-    Slide 1
-    =======
+    Example slide
+    =============
 
-    - it has some bullets
-    - bullet 2
+    - Some bulleted text
+    - More text
 
 Output:
-
 
 +----------------------------------------------------------------------------------------+
 | .. image:: https://raw.githubusercontent.com/myint/rst2pptx/master/examples/output.png |
