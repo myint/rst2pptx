@@ -71,7 +71,7 @@ class PowerPointTranslator(docutils.nodes.NodeVisitor):
                     image_file = io.BytesIO(input_file.read())
             except urllib.error.HTTPError as e:
                 self.document.reporter.warning(
-                    'Could not open {}'.format(uri))
+                    'Could not access {}'.format(uri))
                 return
         else:
             document_filename = docutils.utils.get_source_line(node)[0]
@@ -80,6 +80,7 @@ class PowerPointTranslator(docutils.nodes.NodeVisitor):
             else:
                 root_path = os.getcwd()
             image_file = os.path.join(root_path, uri)
+            uri = image_file
 
         try:
             picture = self.slides[-1].shapes.add_picture(
@@ -88,7 +89,7 @@ class PowerPointTranslator(docutils.nodes.NodeVisitor):
                 top=0)
         except IOError:
             self.document.reporter.warning(
-                'Could not open {}'.format(image_file))
+                'Could not load image {}'.format(uri))
             return
 
         center_picture(picture, self.presentation)
