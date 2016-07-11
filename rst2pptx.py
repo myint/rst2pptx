@@ -121,15 +121,12 @@ class PowerPointTranslator(docutils.nodes.NodeVisitor):
         shapes = self.slides[-1].shapes
 
         if self.title_slide and not shapes[-1].text:
-            text_box = shapes[-1]
+            # This must be the empty text box for the subtitle.
+            shapes[-1].text = node.astext()
         else:
-            text_box = shapes.add_textbox(
-                left=MARGIN,
-                top=TITLE_BUFFER,
-                width=self.presentation.slide_width - 2 * MARGIN,
-                height=self.presentation.slide_height - 2 * TITLE_BUFFER)
-
-        text_box.text = node.astext()
+            text_frame = self.slides[-1].shapes.placeholders[1].text_frame
+            paragraph = text_frame.add_paragraph()
+            paragraph.text = node.astext()
 
     def depart_paragraph(self, node):
         pass
