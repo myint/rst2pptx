@@ -53,6 +53,7 @@ class PowerPointTranslator(docutils.nodes.NodeVisitor):
         self.presentation = presentation
         self.slides = self.presentation.slides
         self.table_rows = None
+        self.title_slide = True
 
     def visit_document(self, node):
         pass
@@ -117,17 +118,24 @@ class PowerPointTranslator(docutils.nodes.NodeVisitor):
         pass
 
     def visit_paragraph(self, node):
-        text_box = self.slides[-1].shapes.add_textbox(
-            left=MARGIN,
-            top=TITLE_BUFFER,
-            width=self.presentation.slide_width - 2 * MARGIN,
-            height=self.presentation.slide_height - 2 * TITLE_BUFFER)
+        shapes = self.slides[-1].shapes
+
+        if self.title_slide and not shapes[-1].text:
+            text_box = shapes[-1]
+        else:
+            text_box = shapes.add_textbox(
+                left=MARGIN,
+                top=TITLE_BUFFER,
+                width=self.presentation.slide_width - 2 * MARGIN,
+                height=self.presentation.slide_height - 2 * TITLE_BUFFER)
+
         text_box.text = node.astext()
 
     def depart_paragraph(self, node):
         pass
 
     def visit_section(self, node):
+        self.title_slide = False
         self.slides.add_slide(self.presentation.slide_layouts[1])
 
     def depart_section(self, node):
@@ -140,6 +148,7 @@ class PowerPointTranslator(docutils.nodes.NodeVisitor):
             # Title slide.
             slide = self.slides.add_slide(self.presentation.slide_layouts[0])
             slide.shapes.title.text = node.astext()
+            self.title_slide = True
             # TODO: Author.
 
     def depart_title(self, node):
