@@ -109,8 +109,8 @@ class PowerPointTranslator(docutils.nodes.NodeVisitor):
         paragraph = text_frame.add_paragraph()
         paragraph.text = node.astext()
 
-        assert self.bullet_level
-        paragraph.level = self.bullet_level
+        if self.bullet_level:
+            paragraph.level = self.bullet_level
 
         raise docutils.nodes.SkipNode
 
