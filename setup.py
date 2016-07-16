@@ -25,8 +25,7 @@ with io.open('README.rst', encoding='utf-8') as readme:
         classifiers=[
             'Development Status :: 2 - Pre-Alpha',
             'License :: OSI Approved :: MIT License',
-            'Programming Language :: Python',
-            'Programming Language :: Python :: 3',
+            'Programming Language :: Python :: 3 :: Only',
             'Topic :: Text Processing :: Markup',
             'Topic :: Utilities',
             'Topic :: Multimedia :: Graphics :: Presentation',

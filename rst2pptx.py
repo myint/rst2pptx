@@ -27,6 +27,7 @@
 
 import io
 import os
+import sys
 import urllib
 
 import docutils.core
@@ -67,6 +68,11 @@ class PowerPointTranslator(docutils.nodes.NodeVisitor):
     def visit_image(self, node):
         uri = node.attributes['uri']
         if '://' in uri:
+            if sys.version_info[0] < 3:
+                self.document.reporter.warning(
+                    'Downloading images requires Python 3 or greater')
+                return
+
             try:
                 with urllib.request.urlopen(uri) as input_file:
                     image_file = io.BytesIO(input_file.read())
